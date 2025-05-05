@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Hacker MFA Authenticator</title>
+<style>
+  /* Hacker style with green on black */
+  @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+  body {
+    margin: 0;
+    height: 100vh;
+    background: #000000;
+    color: #00ff00;
+    font-family: 'VT323', monospace, monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  #app {
+    width: 90vw;
+    max-width: 400px;
+    background: #001100;
+    border: 2px solid #00ff00;
+    padding: 2rem;
+    border-radius: 6px;
+    box-shadow: 0 0 10px #00ff00aa;
+    user-select: none;
+  }
+  h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px #00ff00aa;
+  }
+  label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 1.2rem;
+  }
+  input[type="text"],
+  input[type="password"],
+  input[type="number"] {
+    width: 100%;
+    padding: 0.5rem;
+    background: #003300;
+    border: 1px solid #006600;
+    border-radius: 4px;
+    color: #00ff00;
+    font-family: 'VT323', monospace;
+    font-size: 1.25rem;
+    box-shadow: inset 0 0 5px #00ff00aa;
+  }
+  input::placeholder {
+    color: #006600;
+  }
+  button {
+    margin-top: 1rem;
+    width: 100%;
+    background: #004400;
+    border: 1px solid #00ff00;
+    padding: 0.75rem;
+    font-size: 1.3rem;
+    font-family: 'VT323', monospace;
+    color: #00ff00;
+    cursor: pointer;
+    border-radius: 4px;
+    box-shadow: 0 0 8px #00ff00aa;
+    transition: background 0.3s ease;
+  }
+  button:hover, button:focus {
+    background: #00aa00;
+    outline: none;
+    box-shadow: 0 0 15px #00ff00ee;
+  }
+  #message, #mfa-message, #create-message {
+    margin-top: 1rem;
+    font-weight: bold;
+    text-align: center;
+    min-height: 1.5rem;
+  }
+  /* Typewriter animation for hacker feel */
+  #hacker-prompt {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 0.1em solid #00ff00;
+    animation:
+      typing 3s steps(20, end),
+      blink-caret 0.7s step-end infinite;
+  }
+  @keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+  }
+  @keyframes blink-caret {
+    50% { border-color: transparent }
+  }
+  /* Mobile Responsive */
+  @media (max-width: 400px) {
+    #app {
+      padding: 1.2rem;
+    }
+    h1 {
+      font-size: 2rem;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="number"] {
+      font-size: 1rem;
+    }
+    button {
+      font-size: 1rem;
+      padding: 0.6rem;
+    }
+  }
+  /* Tabs for switching between forms */
+  #nav-tabs {
+    display: flex;
+    margin-bottom: 1rem;
+    user-select: none;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 0.4rem 0;
+    cursor: pointer;
+    border: 2px solid #00ff00;
+    border-bottom: none;
+    background: #002200;
+    font-weight: bold;
+    color: #00ff00;
+    font-family: 'VT323', monospace;
+    font-size: 1.2rem;
+    transition: background 0.3s ease;
+  }
+  .tab.active {
+    background: #000000;
+    box-shadow: inset 0 -3px 0 #00ff00;
+  }
+</style>
+</head>
+<body>
+<div id="app" role="main" aria-label="Hacker style MFA Authentication App">
+  <h1>⚡ Welcome Hackers ⚡</h1>
+  <div id="nav-tabs" role="tablist" aria-label="Authentication forms">
+    <div id="tab-login" class="tab active" role="tab" tabindex="0" aria-selected="true" aria-controls="login-form" aria-label="Login form tab">Login</div>
+    <div id="tab-create" class="tab" role="tab" tabindex="-1" aria-selected="false" aria-controls="create-form" aria-label="Create account tab">Create Account</div>
+  </div>
+  <div id="login-form" role="tabpanel" aria-labelledby="tab-login">
+    <div id="hacker-prompt">user@darknet:~$ </div>
+    <label for="username">Username</label>
+    <input id="username" type="text" autocomplete="username" placeholder="Enter username" required aria-required="true" />
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" placeholder="Enter password" required aria-required="true" />
+    <button id="login-btn" type="button" aria-label="Login">Login</button>
+    <div id="message" role="alert" aria-live="polite"></div>
+  </div>
+  <div id="create-form" role="tabpanel" aria-labelledby="tab-create" style="display:none;">
+    <div id="hacker-prompt">user@darknet:~$ </div>
+    <label for="create-username">Choose Username</label>
+    <input id="create-username" type="text" autocomplete="username" placeholder="New username" required aria-required="true" />
+    <label for="create-password">Choose Password</label>
+    <input id="create-password" type="password" autocomplete="new-password" placeholder="New password" required aria-required="true" />
+    <button id="create-btn" type="button" aria-label="Create Account">Create Account</button>
+    <div id="create-message" role="alert" aria-live="polite"></div>
+  </div>
+  <div id="mfa-form" role="tabpanel" style="display:none;" aria-live="polite" aria-label="Multi-factor authentication form">
+    <div id="hacker-prompt">user@darknet:~$ </div>
+    <label for="mfa-code">MFA Code</label>
+    <input id="mfa-code" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="Enter 6-digit code" required aria-required="true" />
+    <button id="verify-btn" type="button" aria-label="Verify MFA Code">Verify</button>
+    <div id="mfa-message" role="alert" aria-live="polite"></div>
+    <div id="mfa-info" style="font-size: 0.8rem; margin-top: 0.8rem; color: #007700;"></div>
+  </div>
+  <div id="success-message" style="display:none; text-align:center; font-size:1.5rem; margin-top: 1rem;">
+    <p>✅ Access Granted. Welcome, hacker.</p>
+  </div>
+</div>
+
+<script>
+  const loginBtn = document.getElementById('login-btn');
+  const verifyBtn = document.getElementById('verify-btn');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+  const mfaCodeInput = document.getElementById('mfa-code');
+  const messageDiv = document.getElementById('message');
+  const mfaMessageDiv = document.getElementById('mfa-message');
+  const mfaInfoDiv = document.getElementById('mfa-info');
+  const loginForm = document.getElementById('login-form');
+  const mfaForm = document.getElementById('mfa-form');
+  const successMessageDiv = document.getElementById('success-message');
+
+  const createForm = document.getElementById('create-form');
+  const createUsernameInput = document.getElementById('create-username');
+  const createPasswordInput = document.getElementById('create-password');
+  const createBtn = document.getElementById('create-btn');
+  const createMessageDiv = document.getElementById('create-message');
+
+  const tabLogin = document.getElementById('tab-login');
+  const tabCreate = document.getElementById('tab-create');
+
+  let generatedMfaCode = null;
+  let currentUsername = '';
+
+  // Users persisted in localStorage (username -> password)
+  function loadUsers() {
+    const raw = localStorage.getItem('hacker_mfa_users');
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return {};
+    }
+  }
+  function saveUsers(users) {
+    localStorage.setItem('hacker_mfa_users', JSON.stringify(users));
+  }
+  let users = loadUsers();
+
+  function generateMfaCode() {
+    // Returns a 6-digit string as MFA code
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  function validateCredentials(username, password) {
+    username = username.toLowerCase();
+    if (!users[username]) return false;
+    return users[username] === password;
+  }
+
+  function usernameExists(username) {
+    return users.hasOwnProperty(username.toLowerCase());
+  }
+
+  function switchTab(toTab) {
+    if (toTab === 'login') {
+      tabLogin.classList.add('active');
+      tabLogin.setAttribute('aria-selected', 'true');
+      tabLogin.tabIndex = 0;
+      tabCreate.classList.remove('active');
+      tabCreate.setAttribute('aria-selected', 'false');
+      tabCreate.tabIndex = -1;
+      loginForm.style.display = 'block';
+      createForm.style.display = 'none';
+      // Reset messages and inputs
+      createMessageDiv.textContent = '';
+      createUsernameInput.value = '';
+      createPasswordInput.value = '';
+      messageDiv.textContent = '';
+      usernameInput.focus();
+    } else if (toTab === 'create') {
+      tabCreate.classList.add('active');
+      tabCreate.setAttribute('aria-selected', 'true');
+      tabCreate.tabIndex = 0;
+      tabLogin.classList.remove('active');
+      tabLogin.setAttribute('aria-selected', 'false');
+      tabLogin.tabIndex = -1;
+      createForm.style.display = 'block';
+      loginForm.style.display = 'none';
+      // Reset messages and inputs
+      messageDiv.textContent = '';
+      usernameInput.value = '';
+      passwordInput.value = '';
+      createMessageDiv.textContent = '';
+      createUsernameInput.focus();
+    }
+  }
+
+  tabLogin.addEventListener('click', () => switchTab('login'));
+  tabCreate.addEventListener('click', () => switchTab('create'));
+  tabLogin.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      switchTab('login');
+    }
+  });
+  tabCreate.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      switchTab('create');
+    }
+  });
+
+  loginBtn.addEventListener('click', () => {
+    messageDiv.textContent = '';
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!username || !password) {
+      messageDiv.textContent = "Error: Please enter username and password.";
+      return;
+    }
+
+    if (!validateCredentials(username, password)) {
+      messageDiv.textContent = "Error: Invalid username or password.";
+      return;
+    }
+
+    // Credentials valid - proceed with MFA
+    currentUsername = username;
+    generatedMfaCode = generateMfaCode();
+
+    mfaInfoDiv.textContent = `Your MFA code is: ${generatedMfaCode}`;
+    // In real app, code would be sent by SMS/email - simulated here by showing on screen
+
+    loginForm.style.display = 'none';
+    mfaForm.style.display = 'block';
+    mfaCodeInput.value = '';
+    mfaMessageDiv.textContent = '';
+    mfaCodeInput.focus();
+  });
+
+  verifyBtn.addEventListener('click', () => {
+    mfaMessageDiv.textContent = '';
+    const code = mfaCodeInput.value.trim();
+
+    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+      mfaMessageDiv.textContent = "Error: Enter a valid 6-digit code.";
+      return;
+    }
+
+    if (code === generatedMfaCode) {
+      mfaForm.style.display = 'none';
+      successMessageDiv.style.display = 'block';
+      // Redirect after brief delay to show success message
+      setTimeout(() => {
+        window.location.href = 'afterlogin.html';
+      }, 1500);
+    } else {
+      mfaMessageDiv.textContent = "Error: Incorrect MFA code.";
+    }
+  });
+
+  createBtn.addEventListener('click', () => {
+    createMessageDiv.textContent = '';
+    const username = createUsernameInput.value.trim();
+    const password = createPasswordInput.value;
+
+    if (!username || !password) {
+      createMessageDiv.textContent = "Error: Please fill username and password.";
+      return;
+    }
+    if (username.length < 3) {
+      createMessageDiv.textContent = "Error: Username must be at least 3 characters.";
+      return;
+    }
+    if (password.length < 6) {
+      createMessageDiv.textContent = "Error: Password must be at least 6 characters.";
+      return;
+    }
+    if (usernameExists(username)) {
+      createMessageDiv.textContent = "Error: Username already exists.";
+      return;
+    }
+    // Create account
+    users[username.toLowerCase()] = password;
+    saveUsers(users);
+    createMessageDiv.style.color = "#00ff00";
+    createMessageDiv.textContent = "Account created! You can now login.";
+    // Clear inputs
+    createUsernameInput.value = '';
+    createPasswordInput.value = '';
+    // After short delay, switch back to login tab
+    setTimeout(() => {
+      createMessageDiv.style.color = "#ff0000";
+      switchTab('login');
+    }, 2200);
+  });
+
+  // Enter key handling for accessibility and quick submission
+  usernameInput.addEventListener('keydown', e => { if(e.key === 'Enter') passwordInput.focus(); });
+  passwordInput.addEventListener('keydown', e => { if(e.key === 'Enter') loginBtn.click(); });
+  mfaCodeInput.addEventListener('keydown', e => { if(e.key === 'Enter') verifyBtn.click(); });
+  createUsernameInput.addEventListener('keydown', e => { if(e.key === 'Enter') createPasswordInput.focus(); });
+  createPasswordInput.addEventListener('keydown', e => { if(e.key === 'Enter') createBtn.click(); });
+
+  // Initialize focus
+  usernameInput.focus();
+
+</script>
+</body>
+</html>
+
